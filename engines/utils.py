@@ -25,6 +25,27 @@ class ModelFactory:
         return cls.registry[name]
 
 
+class DataFactory:
+    registry = {}
+
+    @classmethod
+    def register(cls, name: str) -> Callable:
+        """ """
+
+        def inner_wrapper(wrapped_class: Callable) -> Callable:
+            if name in cls.registry:
+                logger.warning("Model %s already exists. Will replace it", name)  # noqa
+            cls.registry[name] = wrapped_class
+            return wrapped_class
+
+        return inner_wrapper
+
+    @classmethod
+    def get(cls, name: str) -> Callable:
+        assert name in cls.registry, f"Model {name} does not exist in."  # noqa
+        return cls.registry[name]
+
+
 class TrainerFactory:
     registry = {}
 
