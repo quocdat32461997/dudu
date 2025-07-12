@@ -28,7 +28,10 @@ class NextProductAsText(LightningModule):
     def configure_optimizers(self):
         warmup_steps = 10
         optimizer = torch.optim.AdamW(
-            self.model.parameters(), lr=0.0002, weight_decay=0.0, betas=(0.9, 0.95)
+            self.model.parameters(),
+            lr=0.0002,
+            weight_decay=0.0,
+            betas=(0.9, 0.95),
         )
         scheduler = torch.optim.lr_scheduler.LambdaLR(
             optimizer, lambda step: step / warmup_steps

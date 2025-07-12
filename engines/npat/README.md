@@ -7,3 +7,6 @@ Step 1: Model selection: [Gemma 3 4b-it](https://huggingface.co/google/gemma-3-4
 Step 2: Download weights of the model by "litgpt download google/gemma-3-4b-it". Otherwise, follow this [tutorial](https://lightning.ai/lightning-ai/studios/litgpt-quick-start?section=featured).
 
 Step 3: Follow this [notebook](https://lightning.ai/lightning-ai/studios/finetune-an-llm-with-pytorch-lightning?section=featured) to fine-tune model.
+
+**NOTE**:
+- Follow [this article](https://adithyask.medium.com/a-beginners-guide-to-fine-tuning-gemma-0444d46d821c) to format data
