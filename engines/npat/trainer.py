@@ -22,7 +22,7 @@ from utils import DataFactory, RewardFunctionFactory  # , ModelFactory
 #     trainer.save_checkpoint()
 
 
-def create_trainer(
+def create_grpo_trainer(
     experiment_name: str,
     reward_fns: List[str],
     train_dataset_name: str,

@@ -1,0 +1,5 @@
+lightning==2.5.2
+litgpt==0.5.9
+pytorch_lightning==2.5.2
+torch==2.7.1
+trl==0.19.1

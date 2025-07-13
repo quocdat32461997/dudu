@@ -1,6 +1,13 @@
+"""
+Use this file to redesign inference states. Use PyTorch Lightning or modify HuggingFace's Pipeline
+https://huggingface.co/docs/transformers/en/add_new_pipeline#register-a-pipeline
+"""
+
 import torch
 from lightning import LightningModule
 from litgpt.lora import GPT
+
+# from transformers import AutoBackbone, AutoModel, AutoModelForCausalLM, AutoTokenizer
 from utils import ModelFactory
 
 
