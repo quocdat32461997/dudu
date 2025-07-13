@@ -17,15 +17,14 @@ label: <explain>The customer will purchase F_product_name that belongs to catego
 prompt_2: The customer purchased A_product_name, B_product_name, C_product_name in the timely order. A_product_name belongs to category Beauty and has following features or categories. 
 label: <explain>The customer will purchase F_product_name that belongs to category or brand. The product has following features</explain>
 """
-# def create_conversation(content):
-#     # TO-DO: add prompt
-#     return {
-#         "messages": [
-#             {"role": "system", "content": content["system_content"]},
-#             {"role": "user", "content": content["user_content"]},
-#             {"role": "assistant", "content": content["assistant_content"]},
-#         ]
-#     }
+def create_conversation(content):
+    return {
+        "messages": [
+            {"role": "system", "content": [{"type": "text", "text": content["system_content"]}]},
+            {"role": "user", "content": [{"type": "text", "text": content["user_content"]}]},
+            {"role": "assistant", "content": [{"type": "text", "text": content["assistant_content"]}]},
+        ]
+    }
 
 
 def generate_prompts(
@@ -70,7 +69,27 @@ def generate_prompts(
         metadata_partition["product_id"]["brand"] = brand
         metadata_partition["categories"]["categories"] = categories
 
-    # TO-DO: add quantization-prompt
+    # Generate quantization prompts for product features and categories
+    for product_id, data in metadata_partition.items():
+        if product_id != "product_id" and product_id != "categories":
+            title = data.get("title", "")
+            features = data.get("features", "")
+            brand = data.get("brand", "")
+            categories = data.get("categories", [])
+            
+            if title and categories:
+                category_text = ", ".join(categories) if isinstance(categories, list) else str(categories)
+                
+                system_content = "You are a helpful product recommendation assistant."
+                user_content = f"Analyze this product: {title}. Brand: {brand}. Categories: {category_text}. Features: {features}"
+                assistant_content = f"<explain>This product belongs to {category_text} category/brand. Key features include: {features}</explain>"
+                
+                prompt_data = {
+                    "system_content": system_content,
+                    "user_content": user_content,
+                    "assistant_content": assistant_content
+                }
+                prompts.append(create_conversation(prompt_data))
 
     # Parse transaction history
     prompts = []
@@ -86,7 +105,41 @@ def generate_prompts(
             datetime.fromtimestamp(int(timestamp) / 1000)
         )
 
-    # TO-DO: add transaction-related prompts here.
+    # Generate transaction-related prompts based on purchase history
+    for user_id, user_data in review_partition.items():
+        product_ids = user_data["product_id"]
+        
+        if len(product_ids) >= 2:  # Need at least 2 products for history
+            # Get product details from metadata
+            purchased_products = []
+            next_product_id = product_ids[-1]  # Last product as prediction target
+            history_products = product_ids[:-1]  # Previous products as history
+            
+            # Build purchase history text
+            for hist_id in history_products[-3:]:  # Use last 3 products as history
+                if hist_id in metadata_partition:
+                    product_title = metadata_partition[hist_id].get("title", f"Product_{hist_id}")
+                    purchased_products.append(product_title)
+            
+            if purchased_products and next_product_id in metadata_partition:
+                next_product = metadata_partition[next_product_id]
+                next_title = next_product.get("title", f"Product_{next_product_id}")
+                next_categories = next_product.get("categories", [])
+                next_features = next_product.get("features", "")
+                
+                history_text = ", ".join(purchased_products)
+                category_text = ", ".join(next_categories) if isinstance(next_categories, list) else str(next_categories)
+                
+                system_content = "You are a helpful product recommendation assistant that predicts customer purchases based on purchase history."
+                user_content = f"The customer purchased {history_text} in timely order. What product will they likely purchase next?"
+                assistant_content = f"<explain>The customer will purchase {next_title} that belongs to {category_text} category or brand. The product has following features: {next_features}</explain>"
+                
+                prompt_data = {
+                    "system_content": system_content,
+                    "user_content": user_content,
+                    "assistant_content": assistant_content
+                }
+                prompts.append(create_conversation(prompt_data))
 
     # Save to pickle file
     with open(path_to_save_prompt, "wb") as file:
