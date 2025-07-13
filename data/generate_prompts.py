@@ -6,6 +6,16 @@ from functools import partial
 
 from datasets import load_dataset
 
+# def create_conversation(content):
+#     # TO-DO: add prompt
+#     return {
+#         "messages": [
+#             {"role": "system"},
+#             {"role": "user", "content": content["user_content"]},
+#             {"role": "assistant", "content": content["assistant_content"]},
+#         ]
+#     }
+
 
 def generate_prompts(
     data_path: str,
@@ -17,8 +27,7 @@ def generate_prompts(
     """
     Using gemma-4b-it, should follow this format: https://huggingface.co/unsloth/gemma-3-4b-it # noqa
     """
-    # TO-DO: add prompt
-    PROMPT_TEMPLATES = ["", ""]
+
     # Extract raw data
     review_partition = defaultdict(partial(defaultdict, list))
     metadata_partition = defaultdict(partial(defaultdict, list))
@@ -61,16 +70,6 @@ def generate_prompts(
         review_partition[user_id]["history"].append(history)
         review_partition[user_id]["timestamp"].append(
             datetime.fromtimestamp(int(timestamp) / 1000)
-        )
-
-        # Cast to prompt template
-        # TO-DO: modify to cast prompt.
-        prompt_select = random.randint(0, len(PROMPT_TEMPLATES))
-        prompts.append(
-            PROMPT_TEMPLATES[prompt_select].format(
-                product_id,
-                history,
-            )
         )
 
     # Save to pickle file
