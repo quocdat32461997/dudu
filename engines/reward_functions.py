@@ -1,13 +1,17 @@
 import re
 from typing import List
 
+import evaluate
+
 from engines.utils import RewardFunctionFactory
 
+BLEU_METRIC = evaluate.load("google_bleu")
+
 SEMANTIC_ID_SIZE = 6
-ADDITIONAL_SEMANTIC_PATTERN = "<recommend>\d{0," + str(SEMANTIC_ID_SIZE) + "}"
-SEMANTIC_PATTERN = f"({ADDITIONAL_SEMANTIC_PATTERN}</recommend>)"
-SEMANTIC_SERIES_PATTERN = f"{ADDITIONAL_SEMANTIC_PATTERN}+" + "</recommend>"
-EXPLAIN_PATTERN = "<explain>.*</explain>"
+ADDITIONAL_SEMANTIC_PATTERN = r"<recommend>\d+"
+SEMANTIC_PATTERN = rf"({ADDITIONAL_SEMANTIC_PATTERN}</recommend>)"
+SEMANTIC_SERIES_PATTERN = rf"{ADDITIONAL_SEMANTIC_PATTERN}+" + "</recommend>"
+EXPLAIN_PATTERN = r"<explain>.*?</explain>$"
 
 
 def extract_answer(text: str, start_text, end_text) -> str:
@@ -16,11 +20,20 @@ def extract_answer(text: str, start_text, end_text) -> str:
     return answer.strip()
 
 
+def bleu_score(predictions: List[str], references: List[List[str]]):
+    """
+    Inspired by the BLUE: a surprisingly effective reward for instruction
+    following.
+    https://arxiv.org/html/2505.11080v1
+    """
+    return BLEU_METRIC.compute(predictions=predictions, references=references)
+
+
 @RewardFunctionFactory.register("format_reward")
 def explain_format_reward(completions: List[str], tasks: List[str], **kwargs):
     rewards = []
     TASK = "format_reward"
-    FORMAT_PATTERN = f"{SEMANTIC_PATTERN}\n{EXPLAIN_PATTERN}"
+    FORMAT_PATTERN = rf"{SEMANTIC_PATTERN}\n{EXPLAIN_PATTERN}"
     for completion, task in zip(completions, tasks):
         if task != TASK:
             rewards.append(None)
@@ -32,15 +45,12 @@ def explain_format_reward(completions: List[str], tasks: List[str], **kwargs):
 
 
 @RewardFunctionFactory.register("semantic_reward")
-def semantic_reward(completions: List[str], **kwarsg):  # tasks: List[str],
+def semantic_reward(completions: List[str], **kwarsg):
     rewards = []
-    # TASK = "semantic_reward"
 
     # Exact recommend with all digits and desited size
     # for completion, task in zip(completions, tasks):
     for completion in completions:
-        # if task != TASK:
-        #     rewards.append(None)
 
         match = re.match(SEMANTIC_PATTERN, completion[0]["content"])  # noqa
 
@@ -58,14 +68,14 @@ def semantic_reward(completions: List[str], **kwarsg):  # tasks: List[str],
     return rewards
 
 
-@RewardFunctionFactory.register("explain_reward")
-def explain_reward(
+@RewardFunctionFactory.register("next_product_reward")
+def next_product_reward(
     completions: List[str],
     labels: List[str],
     tasks: List[str],
     **kwargs,
 ):
-    TASK = "explain_reward"
+    TASK = "next_product_reward"
     rewards = []
     for completion, task, label in zip(completions, tasks, labels):
         if task != TASK:
@@ -74,9 +84,11 @@ def explain_reward(
         # Please explain futher why pick the next product.
         match = re.match(EXPLAIN_PATTERN, completion[0]["content"])
         if match:
-            rewards.append(1 if match.group() == label else 0)
+            rewards.append(
+                bleu_score(predictions=[match.group()], references=[label])
+            )  # 1 if match.group() == label else 0
         else:
-            0
+            rewards.append(0)
 
     return rewards
 
