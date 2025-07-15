@@ -79,10 +79,11 @@ def generate_prompts(
             
             if title and categories:
                 category_text = ", ".join(categories) if isinstance(categories, list) else str(categories)
+                features_text = features if features else "NA"
                 
                 system_content = "You are a helpful product recommendation assistant."
-                user_content = f"Analyze this product: {title}. Brand: {brand}. Categories: {category_text}. Features: {features}"
-                assistant_content = f"<explain>This product belongs to {category_text} category/brand. Key features include: {features}</explain>"
+                user_content = f"Analyze this product: {title}. Brand: {brand}. Categories: {category_text}. Features: {features_text}"
+                assistant_content = f"<explain>This product belongs to {category_text} category/brand. Key features include: {features_text}</explain>"
                 
                 prompt_data = {
                     "system_content": system_content,
@@ -129,10 +130,11 @@ def generate_prompts(
                 
                 history_text = ", ".join(purchased_products)
                 category_text = ", ".join(next_categories) if isinstance(next_categories, list) else str(next_categories)
+                features_text = next_features if next_features else "NA"
                 
                 system_content = "You are a helpful product recommendation assistant that predicts customer purchases based on purchase history."
                 user_content = f"The customer purchased {history_text} in timely order. What product will they likely purchase next?"
-                assistant_content = f"<explain>The customer will purchase {next_title} that belongs to {category_text} category or brand. The product has following features: {next_features}</explain>"
+                assistant_content = f"<explain>The customer will purchase {next_title} that belongs to {category_text} category or brand. The product has following features: {features_text}</explain>"
                 
                 prompt_data = {
                     "system_content": system_content,
