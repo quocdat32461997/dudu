@@ -210,8 +210,9 @@ __marimo__/
 .streamlit/secrets.toml
 checkpoints
 .DS_Store
-
+.langgraph_api
 
 # Source Files
 data/data/source/All_Beauty.jsonl
 data/data/source/meta_All_Beauty.jsonl
+.env
