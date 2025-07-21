@@ -34,7 +34,6 @@ def call_gemini_model():
 
 def create_call_model(  # state and config are two default runtime params.
     # Other static parameters
-    model_name: str,
     tools: List[str] = [],
 ):
     def call_model(
@@ -42,7 +41,6 @@ def create_call_model(  # state and config are two default runtime params.
         state: MessagesState,
         config: RunnableConfig,
         # Other static parameters
-        model_name: str,
         tools: List[str] = [],
     ):
         """
@@ -66,11 +64,28 @@ def create_call_model(  # state and config are two default runtime params.
             model = model.bind_tools(tools)
 
         # Invoke model
-        response = model.invoke(state["messages"])
+        prompt = f"""
+        System: You are a helpful product recommendation assistant. 
+
+        You are to considered following products to recommend to the customer: 
+        - Gold-toned pendant necklace: $15 | H&M brand | Gold | Product-id 100
+        - Set of stackable rings: $18 | Zara | Mix of Gold and Silver | Product-id 101
+        - Pairs of earings: $2,000 | Gucci | Pure Gold 18K. | Product-id 102
+        - Hermes Birkin bag: $10,000 | Hermes | Aligator skin | Product-id 103
+        - A white silk blouse: $ 25 | Ralph Lauren | Silk | Product-id 105
+        
+        You are asked to the following task: {state["messages"]}
+        
+        You must provide the product-id within [] and product name only. 
+
+        Below are couple examples:
+
+        """  # parse user's message here
+        response = model.invoke(prompt)
 
         return {"messages": [response]}
 
-    return partial(call_model, model_name=model_name, tools=tools)
+    return partial(call_model, tools=tools)
 
 
 # asyncio.run(main())
@@ -120,12 +135,10 @@ class Agent:
 
     def __init__(
         self,
-        year: int,
     ) -> None:
         self.workflow = StateGraph(MessagesState)
 
         _call_model = create_call_model(
-            model_name=self.model_name,
             tools=[],
         )  # noqa
         tool_node = ToolNode([])
@@ -140,7 +153,7 @@ class Agent:
             should_continue,
             {
                 "tools": "tools",  # f1040_agent.name,
-                END: "call_model",
+                END: END,
             },
         )  # noqa
 
