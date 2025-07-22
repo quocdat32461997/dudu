@@ -56,7 +56,9 @@ def semantic_reward(completions: List[str], **kwarsg):
 
         if match:
             match = extract_answer(match.group(), "<recommend>", "</recommend>")  # noqa
-            digit_count = sum([1 if x.isdigit() else -1 for x in match])  # noqa
+            digit_count = sum(
+                [1 if x.isdigit() and x >= 0 and x < 256 else -1 for x in match]  # noqa
+            )  # noqa
             rewards.append(
                 digit_count
                 if digit_count <= SEMANTIC_ID_SIZE
@@ -93,6 +95,6 @@ def next_product_reward(
     return rewards
 
 
-@RewardFunctionFactory.register("similar_product")
+@RewardFunctionFactory.register("contrastive_product")
 def similar_product(completionts, expected_products, **kwargs):
     pass
