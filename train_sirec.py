@@ -1,10 +1,16 @@
+"""
+File to train encoding semantic-ids and recommendation
+"""
+
 import json
 
 from datasets import Dataset
 
 from engines.utils import TrainerFactory
 
-with open("data/data/prompts/all_beauty_prompts.jsonl", "r", encoding="utf-8") as f:
+with open(
+    "data/data/prompts/all_beauty_prompts.jsonl", "r", encoding="utf-8"
+) as f:  # noqa
     train_dataset = []
     for line in f:
         try:
@@ -14,9 +20,10 @@ with open("data/data/prompts/all_beauty_prompts.jsonl", "r", encoding="utf-8") a
             print(f"Error decoding JSON on line: {line.strip()} - {e}")
 
     train_dataset = Dataset.from_list(train_dataset)
-print(train_dataset)
+
 train_fn = TrainerFactory.get("grpo_trainer")
 
 train_fn(
-    train_dataset=train_dataset, reward_fns=["format_reward", "semantic_reward"]
+    train_dataset=train_dataset,
+    reward_fns=["format_reward", "semantic_reward"],
 )  # noqa
