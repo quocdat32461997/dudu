@@ -5,9 +5,8 @@ from datasets import Dataset
 # from lightning import Trainer
 # from litgpt.lora import merge_lora_weights
 from trl import GRPOConfig, GRPOTrainer
-from utils import DataFactory, RewardFunctionFactory
 
-from engines.utils import TrainerFactory
+from engines.utils import DataFactory, RewardFunctionFactory, TrainerFactory
 
 # @TrainerFactory.register("next_product_as_text")
 # def train_fn():
@@ -26,7 +25,7 @@ from engines.utils import TrainerFactory
 
 @TrainerFactory.register("grpo_trainer")
 def grpo_trainer(
-    reward_fns: List[str], train_dataset: Dataset, model="google/gemma-3-4b-it"
+    reward_fns: List[str], train_dataset: Dataset, model="unsloth/gemma-3-4b-it"
 ):
     # Init trainer
     training_args = GRPOConfig(output_dir=None)
