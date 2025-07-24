@@ -6,20 +6,7 @@ import json
 
 from datasets import Dataset
 
-from engines.reward_functions import SEMANTIC_ID_SIZE
 from engines.utils import TrainerFactory
-
-SYSTEM_PROMPT = f"""
-You are a helpful product recommendation assistant.
-Respond in the following format:
-<recommend>
-...
-</recommend>
-<explain>
-...
-</explain>
-Between <recommend> and </recommend> are all {SEMANTIC_ID_SIZE} digits ranging from 0 to 256.
-"""
 
 with open(
     "data/data/prompts/all_beauty_prompts.jsonl", "r", encoding="utf-8"
