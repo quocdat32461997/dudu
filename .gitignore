@@ -219,5 +219,5 @@ data/data/source/meta_All_Beauty.jsonl
 .langgraph_api
 events.out.tfevents.*
 *.gz
-All_Beauty.jsonl
-meta_All_Beauty.jsonl
+data/source
+*.jsonl
