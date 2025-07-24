@@ -217,3 +217,4 @@ data/data/source/All_Beauty.jsonl
 data/data/source/meta_All_Beauty.jsonl
 .env
 .langgraph_api
+events.out.tfevents.*

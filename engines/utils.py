@@ -86,4 +86,4 @@ class RewardFunctionFactory:
     @classmethod
     def get(cls, name: str, **kwargs) -> Callable:
         assert name in cls.registry, f"Trainer {name} does not exist in."  # noqa
-        return partial(cls.registry[name], **kwargs)
+        return cls.registry[name]  # partial(cls.registry[name], **kwargs)

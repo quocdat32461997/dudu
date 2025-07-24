@@ -30,7 +30,7 @@ def bleu_score(predictions: List[str], references: List[List[str]]):
 
 
 @RewardFunctionFactory.register("format_reward")
-def explain_format_reward(completions: List[str], tasks: List[str], **kwargs):
+def format_reward(completions: List[str], tasks: List[str], **kwargs):
     rewards = []
     TASK = "format_reward"
     FORMAT_PATTERN = rf"{SEMANTIC_PATTERN}\n{EXPLAIN_PATTERN}"
