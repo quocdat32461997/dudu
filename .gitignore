@@ -213,7 +213,16 @@ checkpoints
 .langgraph_api
 
 # Source Files
-data/data/source/All_Beauty.jsonl
-data/data/source/meta_All_Beauty.jsonl
+data/source/All_Beauty.jsonl
+data/source/meta_All_Beauty.jsonl
 .env
 .langgraph_api
+events.out.tfevents.*
+*.gz
+data/source/*
+data/prompts/*
+*.jsonl
+*.wandb
+wandb-*.json
+wandb
+trainer_output
