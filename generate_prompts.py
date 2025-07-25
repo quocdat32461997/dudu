@@ -1,12 +1,13 @@
 import json
 import os
+import random
 from collections import defaultdict
 from datetime import datetime
 from functools import partial
 
-from datasets import load_dataset
-
 from dudu.prompts import _SEMANTIC_ID_SAMPLE, SEMANTIC_ID_SIZE, SYSTEM_PROMPT
+
+random.seed(22)
 
 
 def create_conversation(content):
@@ -81,6 +82,7 @@ def generate_prompts(
     print(f"Total metadata records processed: {len(metadata_partition)}")
 
     # Generate quantization prompts for product features and categories
+    path_to_save = "data/prompts/all_beauty_analysis_prompts.jsonl"
     print("Generating product analysis prompts...")
     for product_id, data in metadata_partition.items():
         title = data.get("title", "")
@@ -89,17 +91,16 @@ def generate_prompts(
         categories = data.get("categories", [])
         if title:
             category_text = (
-                ", ".join(categories)
-                if isinstance(categories, list)
+                ", ".join(random.sample(categories, 2))
+                if isinstance(categories, list) and len(categories) > 1
                 else str(categories)
             )
             description_text = description if description else "NA"
             brand_text = brand if brand else "Unknown"
 
             # system_content = "You are a helpful product recommendation assistant."
-            user_content = f"Analyze this product: {title}. Brand: {brand_text}. Categories: {category_text}. Description: {description_text}"
-            assistant_content = f"This product belongs to {category_text} category/brand. Key features include: {description_text}"
-
+            user_content = f"Analyze this product: {title}. Brand: {brand_text}. Categories: {category_text}. Description: {description_text}"  # noqa
+            assistant_content = f"This product belongs to {category_text} category/brand. Key features include: {description_text}"  # noqa
             prompt_data = {
                 # "system_content": system_content,
                 "user_content": user_content,
@@ -109,10 +110,9 @@ def generate_prompts(
 
     print(f"Generated {len(analysis_prompts)} product analysis prompts")
     # Save to JSONL file
-    print(f"Saving prompts to {"data/prompts/all_beauty_analysis_prompts.jsonl"}...")
-    with open(
-        "data/prompts/all_beauty_analysis_prompts.jsonl", "w", encoding="utf-8"
-    ) as file:
+
+    print(f"Saving prompts to {path_to_save}...")
+    with open(path_to_save, "w", encoding="utf-8") as file:
         for prompt in analysis_prompts:
             file.write(json.dumps(prompt) + "\n")
 
@@ -147,6 +147,7 @@ def generate_prompts(
 
     # Generate transaction-related prompts based on purchase history
     print("Generating purchase prediction prompts...")
+    path_to_save = "data/prompts/all_beauty_recommend_prompts.jsonl"
     prediction_prompts = 0
 
     # Group purchases by user and sort by timestamp to create purchase sequences
@@ -156,7 +157,9 @@ def generate_prompts(
 
         if len(product_ids) >= 2:  # Need at least 2 products for history
             # Sort by timestamp to get chronological order
-            sorted_items = sorted(zip(product_ids, timestamps), key=lambda x: x[1])
+            sorted_items = sorted(
+                zip(product_ids, timestamps), key=lambda x: x[1]
+            )  # noqa
             sorted_product_ids = [item[0] for item in sorted_items]
 
             # Get product details from metadata
@@ -176,21 +179,26 @@ def generate_prompts(
 
             if purchased_products and next_product_id in metadata_partition:
                 next_product = metadata_partition[next_product_id]
-                next_title = next_product.get("title", f"Product_{next_product_id}")
+                next_title = next_product.get(
+                    "title",
+                    f"Product_{next_product_id}",
+                )
                 next_categories = next_product.get("categories", [])
                 next_description = next_product.get("description", "")
 
                 history_text = ", ".join(purchased_products)
                 category_text = (
-                    ", ".join(next_categories)
-                    if isinstance(next_categories, list)
+                    ", ".join(random.sample(categories, 2))
+                    if isinstance(next_categories, list) and len(categories) > 1
                     else str(next_categories)
                 )
-                description_text = next_description if next_description else "NA"
+                description_text = (
+                    next_description if next_description else "NA"
+                )  # noqa
 
                 # system_content = "You are a helpful product recommendation assistant that predicts customer purchases based on purchase history."
                 user_content = f"The customer purchased {history_text} in timely order. What product will they likely purchase next?"
-                assistant_content = f"The customer will purchase {next_title} that belongs to {category_text} category or brand. The product has following features: {description_text}"
+                assistant_content = f"The customer will purchase {next_title}."  # that belongs to {category_text} category or brand. The product has following features: {description_text}"
 
                 prompt_data = {
                     # "system_content": system_content,
@@ -204,22 +212,22 @@ def generate_prompts(
     print(f"Total prompts generated: {len(recommend_prompts)}")
 
     # Save to JSONL file
-    print(f"Saving prompts to {"data/prompts/all_beauty_prompts.jsonl"}...")
-    with open(
-        "data/prompts/all_beauty_recommend_prompts.jsonl", "w", encoding="utf-8"
-    ) as file:
+    print(f"Saving prompts to {path_to_save}...")
+    with open(path_to_save, "w", encoding="utf-8") as file:
         for prompt in recommend_prompts:
             file.write(json.dumps(prompt) + "\n")
 
     print(
-        f"Successfully generated {len(recommend_prompts)} prompts and saved to {path_to_save_prompt}"
+        f"Successfully generated {len(recommend_prompts)} prompts and saved to {path_to_save_prompt}"  # noqa
     )
 
     # Save comprehensive list
     print(
-        f"Generated {len(recommend_prompts) + len(analysis_prompts)} purchase prompts"
+        f"Generated {len(recommend_prompts) + len(analysis_prompts)} purchase prompts"  # noqas
     )
-    print(f"Total prompts generated: {len(recommend_prompts) + len(analysis_prompts)}")
+    print(
+        f"Total prompts generated: {len(recommend_prompts) + len(analysis_prompts)}"  # noqa
+    )  # noqa
 
     # Save to JSONL file
     print(f"Saving prompts to {path_to_save_prompt}...")

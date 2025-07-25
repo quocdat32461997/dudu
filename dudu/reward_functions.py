@@ -25,13 +25,14 @@ def bleu_score(predictions: List[str], references: List[List[str]]):
 
 
 @RewardFunctionFactory.register("format_reward")
-def format_reward(completions: List[str], tasks: List[str], **kwargs):
+def format_reward(completions: List[str], **kwargs):  # tasks: List[str],
     rewards = []
     TASK = "format_reward"
     FORMAT_PATTERN = rf"{SEMANTIC_PATTERN}\n{EXPLAIN_PATTERN}"
-    for completion, task in zip(completions, tasks):
-        if task != TASK:
-            rewards.append(None)
+    for completion in completions:
+        # for completion, task in zip(completions, tasks):
+        # if task != TASK:
+        # rewards.append(None)
 
         match = re.match(FORMAT_PATTERN, completion[0]["content"])
         rewards.append(1 if match else 0)
@@ -52,15 +53,19 @@ def semantic_reward(completions: List[str], **kwarsg):
         if match:
             match = extract_answer(match.group(), "<recommend>", "</recommend>")  # noqa
             digit_count = sum(
-                [1 if x.isdigit() and x >= 0 and x < 256 else -1 for x in match]  # noqa
+                [
+                    1 if x.isdigit() and int(x) >= 0 and int(x) < 256 else 0
+                    for x in match
+                ]  # noqa
             )  # noqa
             rewards.append(
-                digit_count
-                if digit_count <= SEMANTIC_ID_SIZE
-                else (digit_count - SEMANTIC_ID_SIZE)
+                # digit_count
+                # if digit_count <= SEMANTIC_ID_SIZE
+                # else (digit_count - SEMANTIC_ID_SIZE)
+                -abs(digit_count - SEMANTIC_ID_SIZE)
             )  # noqa
         else:
-            rewards.append(0)
+            rewards.append(-SEMANTIC_ID_SIZE)
 
     return rewards
 
@@ -68,21 +73,20 @@ def semantic_reward(completions: List[str], **kwarsg):
 @RewardFunctionFactory.register("next_product_reward")
 def next_product_reward(
     completions: List[str],
-    labels: List[str],
-    tasks: List[str],
+    # labels: List[str],
     **kwargs,
 ):
     TASK = "next_product_reward"
     rewards = []
-    for completion, task, label in zip(completions, tasks, labels):
-        if task != TASK:
-            rewards.append(None)
+    for completion, answer in zip(completions, kwargs["answer"]):
+        # if task != TASK:
+        #     rewards.append(None)
 
         # Please explain futher why pick the next product.
         match = re.match(EXPLAIN_PATTERN, completion[0]["content"])
         if match:
             rewards.append(
-                bleu_score(predictions=[match.group()], references=[label])
+                bleu_score(predictions=[match.group()], references=[answer])
             )  # 1 if match.group() == label else 0
         else:
             rewards.append(0)

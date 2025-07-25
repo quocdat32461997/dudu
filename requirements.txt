@@ -1,5 +1,13 @@
+evaluate==0.4.5
+langchain_core==0.3.72
+langchain_google_genai==2.1.8
+langgraph==0.5.4
 lightning==2.5.2
 litgpt==0.5.9
+peft==0.16.0
+protobuf==3.12.4
+python-dotenv==1.1.1
 pytorch_lightning==2.5.2
 torch==2.7.1
+transformers==4.53.3
 trl==0.19.1
