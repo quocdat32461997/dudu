@@ -21,7 +21,7 @@ from dudu.utils import RewardFunctionFactory, TrainerFactory
 #     # Save final checkpoint
 #     merge_lora_weights(model.model)
 #     trainer.save_checkpoint()
-TORCH_LOGS = "+dynamo"
+TORCH_LOGS = "recomplies"
 
 
 @TrainerFactory.register("grpo_trainer")
@@ -49,7 +49,9 @@ def grpo_trainer(
     training_args = GRPOConfig(
         output_dir=None,
         per_device_train_batch_size=2,
-        learning_rate=1e-5,
+        learning_rate=torch.tensor(
+            1e-5
+        ),  # Wrap into tensor to avoid recompilations, https://shorturl.at/Pquwp
         remove_unused_columns=False,  # to access the solution column in accuracy_reward
         gradient_accumulation_steps=16,
         num_train_epochs=1,
